@@ -2,7 +2,7 @@
 #include "mpi.h"
 #include <random>
 
-const static int rowCount = 8;
+const static int rowCount = 9;
 const static int rowLength = rowCount + 1;
 const static int maxNumbers = 100;
 const static int minNumbers = -50;
@@ -51,7 +51,7 @@ static double** makeSLAU()
 	cout << "STARTOVAYA MATRICA\n";
 	for (int i = 0; i < rowCount; i++)
 	{
-		for (int j = 0; j < rowLength; j++) cout << m[i][j] << " ";
+		for (int j = 0; j < rowLength; j++) printf("%10.0f ", m[i][j]); //cout << m[i][j] << " ";
 		cout << "\n";
 	}
 
@@ -146,8 +146,8 @@ int main()
 						MPI_COMM_WORLD);
 					//for (int a = 0; a < curRowLength; a++) cout << "firstRow[" << a << "] = " << firstRow[a] << '\n';
 
-					double* curList = new double[curRowLength * curRowCount];
-					for (int z = 0; z < curRowCount; z++)
+					double* curList = new double[curRowLength * bSize];
+					for (int z = 0; z < bSize; z++)
 					{
 						for (int v = 0; v < curRowLength; v++)
 						{
@@ -223,7 +223,16 @@ int main()
 					//for (int a = 0; a < rowCount * rowLength; a++) cout << "mList[" << a << "] = " << mList[a] << '\n';
 					//cout << "curRowLength = " << curRowLength << '\n';
 				}
+				//for (int a = 0; a < rowCount * rowLength; a++) cout << "mList[" << a << "] = " << mList[a] << '\n';
+				//cout << "curRowLength = " << curRowLength << '\n';
 				//cout << "\n\n";
+				for (int q = rowCount - 1; q >= 1 + i; q--)
+				{
+					for (int w = 0; w < i; w++)
+					{
+						mList[q * rowLength + w] = 0;
+					}
+				}
 			}
 			cout << "--------------------------\n\n\n\n\n\n";
 				for (int i = 0; i < rowCount; i++)
@@ -235,7 +244,7 @@ int main()
 				}
 				for (int i = 0; i < rowCount; i++)
 				{
-					for (int j = 0; j < rowLength; j++) cout << m[i][j] << " ";
+					for (int j = 0; j < rowLength; j++) printf("%10.2f ", m[i][j]);//cout << m[i][j] << " ";
 					cout << "\n";
 				}
 
@@ -353,8 +362,8 @@ int main()
 
 				for (int i = 0; i < *bSize; i++)
 				{
-					double k = curM[0][i] / firstRow[0];
-					for (int j = i; j < *curRowLength; j++)
+					double k = curM[i][0] / firstRow[0];
+					for (int j = 0; j < *curRowLength; j++)
 					{
 						curM[i][j] -= firstRow[j] * k;
 					}
@@ -375,6 +384,13 @@ int main()
 						curList[i * rowLength + j] = curM[i][j];
 					}
 				}
+
+				//cout << "***PID = " << processID << "***\n";
+				//cout << "curRowLength = " << *curRowLength << '\n';
+				//cout << "bSize = " << *bSize << '\n';
+				//for (int a = 0; a < *curRowLength; a++) cout << "firstRow[" << a << "] = " << firstRow[a] << '\n';
+				//for (int a = 0; a < *curRowLength * *bSize; a++) cout << "curList[" << a << "] = " << curList[a] << '\n';
+
 				double* pcurList = curList;
 				MPI_Send(pcurList,
 					*curRowLength * *bSize,
